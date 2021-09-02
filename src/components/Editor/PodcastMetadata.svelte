@@ -1,0 +1,179 @@
+<script>
+  import { editingPodcast, rssData } from "../../../stores/editor";
+
+  let blankFunding = {
+    "#text": "",
+    "@_url": "",
+  };
+  let fundingArray;
+
+  $: if ($editingPodcast && $rssData) {
+    fundingArray = $rssData["podcast:funding"]
+      ? $rssData?.["podcast:funding"]
+      : [{ ...blankFunding }];
+    if (!Array.isArray(fundingArray)) {
+      fundingArray = [fundingArray];
+    }
+
+    $rssData["itunes:owner"] = $rssData["itunes:owner"]
+      ? $rssData["itunes:owner"]
+      : { ["itunes:email"]: "", "itunes:name": "" };
+  }
+</script>
+
+{#if $rssData}
+  <label>
+    <h3>Title:</h3>
+    <input type="text" bind:value={$rssData.title} />
+  </label>
+  <div class="podcast-image">
+    <label>
+      <h3>Episode Image URL:</h3>
+      <input type="text" bind:value={$rssData.image.url} />
+    </label>
+    <img src={$rssData.image.url} style="height: 75px; width: 75px" />
+  </div>
+
+  <label>
+    <h3>Description:</h3>
+    <textarea type="text" bind:value={$rssData.description} />
+  </label>
+  <label>
+    <h3>Keywords:</h3>
+    <input type="text" bind:value={$rssData["itunes:keywords"]} />
+  </label>
+  <label>
+    <h3>Link:</h3>
+    <input type="text" bind:value={$rssData.link} />
+  </label>
+  <label>
+    <h3>Author:</h3>
+    <input type="text" bind:value={$rssData["itunes:author"]} />
+  </label>
+  <label>
+    <h3>Managing Editor:</h3>
+    <input type="text" bind:value={$rssData["managingEditor"]} />
+  </label>
+  <h3>Owner</h3>
+  <label>
+    <h4>Name:</h4>
+    <input type="text" bind:value={$rssData["itunes:owner"]["itunes:name"]} />
+  </label>
+  <label>
+    <h4>E-mail</h4>
+    <input type="email" bind:value={$rssData["itunes:owner"]["itunes:email"]} />
+  </label>
+
+  <div class="funding header">
+    <h3>Funding:</h3>
+    <button
+      on:click={() => {
+        fundingArray.push({ ...blankFunding });
+        $rssData["podcast:funding"] = fundingArray;
+      }}
+    >
+      Add New Funding Block
+    </button>
+  </div>
+  {#each fundingArray as funding, i}
+    <div class="funding block">
+      <h4 style={`color: hsla(${352 - ((i + 1) % 4) * 90}, 100%, 33%, 1)`}>
+        Funding Block #{i + 1}:
+      </h4>
+      <button
+        on:click={(e) => {
+          fundingArray.splice(i, 1);
+          $rssData["podcast:funding"] = fundingArray;
+        }}
+        style={`background-image: linear-gradient(
+          to bottom,
+          hsla(${352 - ((i + 1) % 4) * 90}, 100%, 46.7%, 1),
+          hsla(${352 - ((i + 1) % 4) * 90}, 100%, 26.7%, 1)
+        )`}
+      >
+        Delete This Block
+      </button>
+    </div>
+    <label>
+      <h5 style={`color: hsla(${352 - ((i + 1) % 4) * 90}, 100%, 33%, 1)`}>
+        Funding Text:
+      </h5>
+      <input type="text" bind:value={funding["#text"]} />
+    </label>
+    <label>
+      <h5 style={`color: hsla(${352 - ((i + 1) % 4) * 90}, 100%, 33%, 1)`}>
+        Funding URL:
+      </h5>
+      <input type="text" bind:value={funding["@_url"]} />
+    </label>
+  {/each}
+{/if}
+
+<style>
+  .podcast-image {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  label {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .funding {
+    display: flex;
+    align-items: center;
+  }
+  input,
+  textarea {
+    flex-grow: 1;
+    padding: 8px;
+  }
+
+  h3,
+  h4,
+  h5 {
+    margin: 0;
+    padding: 0;
+    color: hsla(352, 100%, 33%, 1);
+  }
+
+  img {
+    margin: 0 0 0 8px;
+  }
+
+  button {
+    background-color: #333;
+    margin: 0;
+    color: #eee;
+    padding: 2px 8px;
+    margin: 0 8px;
+    color: #f0f0f0;
+    text-shadow: 0 1px #c0c0c0;
+    background: #333;
+    border: 1px solid;
+    border-color: #cfcfcf #a7a7a7 #8e8f8f;
+    border-radius: 50px;
+    outline: 0;
+    background-image: linear-gradient(
+      to bottom,
+      hsla(352, 100%, 43.7%, 1),
+      hsla(352, 100%, 26.7%, 1)
+    );
+    box-shadow: inset 0 1px hsla(0, 0%, 42.7%, 1), 0 2px 2px rgba(0, 0, 0, 0.33);
+    text-shadow: 1px 4px 6px rgb(82, 82, 82), 0 0 0 #000,
+      1px 4px 6px rgb(82, 82, 82);
+  }
+
+  .funding.header {
+    margin-bottom: 12px;
+  }
+
+  .funding.block {
+    margin: 8px 0;
+  }
+  .funding.block > button {
+    font-size: 0.9em;
+  }
+</style>
